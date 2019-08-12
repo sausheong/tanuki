@@ -2,6 +2,6 @@
 *.log
 bin/*
 !bin/*.go
-listener/*
-!listener/*.go
+listeners/*
+!listeners/*.go
 
