@@ -4,4 +4,14 @@ bin/*
 !bin/*.go
 listeners/*
 !listeners/*.go
-
+tanuki
+Backups
+CachedExtensions
+globalStorage
+User
+CachedExtensionsglobalStorage
+languagepacks.json
+machineid
+rapid_render.json
+self-signed.cert
+self-signed.key
