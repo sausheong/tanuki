@@ -20,7 +20,10 @@ func main() {
 	// headers and body (if any)
 	var request structs.RequestInfo
 	// unmarshal the request from JSON into a struct
-	json.Unmarshal([]byte(os.Args[1]), &request)
+	err := json.Unmarshal([]byte(os.Args[1]), &request)
+	if err != nil {
+		danger("Cannot unmarshal JSON", err)
+	}
 
 	// your response should be in JSON too and must contain the status, header (can
 	// be empty) and body

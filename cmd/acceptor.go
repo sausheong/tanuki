@@ -139,6 +139,7 @@ func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Para
 	}
 	// marshal the RequestInfo struct into JSON
 	reqJSON, err := json.Marshal(reqInfo)
+	fmt.Println(string(reqJSON))
 	if err != nil {
 		danger("Failed to marshal the request into JSON", err)
 	}
