@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+name=$(echo $1|jq '.["Params"]["name"][0]'|tr -d \")
+cat <<- _EOF_
+{
+    "status": 200, 
+    "header": {}, 
+    "body": "hello $name"
+}
+_EOF_

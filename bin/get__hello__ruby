@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+request = JSON.parse ARGV[0]
+response = {
+    status: 200,
+    header: {},
+    body: "hello #{request['Params']['name'][0]}"
+}
+puts response.to_json

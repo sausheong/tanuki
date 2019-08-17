@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+
+require 'socket'
+require 'json'
+
+server = TCPServer.open(ARGV[0])
+loop {      
+    Thread.start(server.accept) do |conn|
+        request = JSON.parse conn.gets
+        response = {
+            status: 200,
+            header: {},
+            body: "hello #{request['Params']['name'][0]}"
+        }
+        conn.puts response.to_json        
+        conn.close
+    end
+}
