@@ -52,7 +52,6 @@ this command only in the Tanuki application root.`,
 func start() {
 	getAllBins()
 	getAllListeners()
-	fmt.Println("listeners:", listeners)
 
 	router := httprouter.New()
 
@@ -71,7 +70,7 @@ func start() {
 		WriteTimeout:   time.Duration(*writeTimeout * int64(time.Second)),
 		MaxHeaderBytes: 1 << 20,
 	}
-	fmt.Println("Tanuki started at", host)
+	fmt.Println("Tanuki started at", host, time.Now().String())
 	server.ListenAndServe()
 }
 
@@ -149,7 +148,7 @@ func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Para
 	// marshal the RequestInfo struct into JSON
 	reqJSON, err := json.Marshal(reqInfo)
 	if err != nil {
-		danger("Failed to marshal the request into JSON", err)
+		danger("Failed to marshal the request into JSON - ", err)
 	}
 	// routeID is used to identify which responder to call
 	routeID := join(strings.ToLower(request.Method), strings.ReplaceAll(request.URL.Path[2:], "/", "__"))
@@ -183,6 +182,7 @@ func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Para
 		} else {
 			reply(writer, 404, []byte("Tanuki action not found"))
 			info("Action not found", request.Method, request.URL.Path, join("(", routeID, ")"))
+			fmt.Println(time.Since(start).String())
 			return
 		}
 	}
@@ -192,7 +192,9 @@ func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Para
 	err = json.Unmarshal([]byte(output), &response)
 	if err != nil {
 		reply(writer, 500, []byte("Cannot unmarshal response JSON - "+err.Error()))
-		danger("Cannot unmarshal response JSON", err, request.Method, request.URL.Path)
+		danger("Cannot unmarshal response JSON", err, request.Method, request.URL.Path, " - ", time.Since(start).String())
+		fmt.Println(time.Since(start).String())
+		return
 	}
 
 	// write headers to writer
@@ -252,7 +254,6 @@ func getAllBins() {
 					bins = append(bins, info.Name())
 				}
 			}
-
 			return nil
 		})
 	if err != nil {
