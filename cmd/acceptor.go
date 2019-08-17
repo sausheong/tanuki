@@ -153,18 +153,33 @@ func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Para
 	// routeID is used to identify which responder to call
 	routeID := join(strings.ToLower(request.Method), strings.ReplaceAll(request.URL.Path[2:], "/", "__"))
 
+	// ------------
 	// send request
+	// ------------
 	var output []byte
+
+	// bins are executable binary files. Tanuki walks through the bin/ directory to look for
+	// executable binaries and adds them to a list. Each binary takes in a request JSON through the
+	// command line argument and returns a response JSON through STDOUT. When a route matches the
+	// name of the binary, Tanuki will call the binary with the request JSON as the argument and
+	// parses the return output as a response JSON
+
 	// if if it's in the bins, run it
 	if exists(bins, routeID) {
-		// execute the bin and get a JSON output
-
+		// execute the bin and get a response JSON output
 		output, err = exec.Command(join("bin/", routeID), string(reqJSON)).Output()
 		if err != nil {
 			danger("Cannot execute bin", err)
 		}
 		info("Binary called", request.Method, request.URL.Path, join("(", routeID, ") - ", time.Since(start).String()))
 	} else {
+
+		// listeners are TCP socket servers. Tanuki walks through files in the listener/ directory, and starts
+		// each listener, adding it to a hash, with the routeID of the listener as the key and the port number
+		// of the TCP server as the value. Each listener takes in a request JSON (terminated by a newline \n)
+		// and returns a response JSON through the same connection. Listeners are supposed to be more performant
+		// because they can be multi-threaded and also already started up, unlike binaries
+
 		// if it's in the listeners, run it
 		if addr, ok := listeners[routeID]; ok {
 			start := time.Now()
@@ -187,6 +202,9 @@ func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Para
 		}
 	}
 
+	// ----------------
+	// receive response
+	// ----------------
 	// parse the JSON output
 	var response structs.ResponseInfo
 	err = json.Unmarshal([]byte(output), &response)
@@ -220,7 +238,6 @@ func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Para
 	fmt.Println(time.Since(start).String())
 	// respond to the client
 	reply(writer, response.Status, data)
-
 }
 
 // send response to client
@@ -237,12 +254,6 @@ func isTextMimeType(ctype string) bool {
 	return false
 }
 
-// func getBin(method, path string) (binPath string) {
-// 	binPath = join(strings.ToUpper(method), "__", strings.ReplaceAll(path, "/", "__"))
-
-// 	return
-// }
-
 // load all bins into the bins variable
 func getAllBins() {
 	err := filepath.Walk("bin",
@@ -252,6 +263,7 @@ func getAllBins() {
 				// must be an executable file
 				if info.Mode()&0100 == os.FileMode(0000100) {
 					bins = append(bins, info.Name())
+					fmt.Println("binary added:", info.Name())
 				}
 			}
 			return nil
@@ -263,24 +275,24 @@ func getAllBins() {
 
 // load all listeners into the listeners variable
 func getAllListeners() {
-
 	err := filepath.Walk("listeners",
 		func(path string, fileinfo os.FileInfo, err error) error {
 			// not a directory
 			if !fileinfo.IsDir() {
 				// must be an executable file
 				if fileinfo.Mode()&0100 == os.FileMode(0000100) {
+					// get a free port for the listener
 					port, err := getFreePort()
 					if err != nil {
 						fmt.Println("Cannot get port", err)
 					}
+					// put it in a hash of listeners with the port number
 					listeners[fileinfo.Name()] = strconv.Itoa(port)
-
+					// start the listener and pass it the port number
 					go exec.Command(path, strconv.Itoa(port)).Run()
 					fmt.Println("listener started:", path, port)
 				}
 			}
-
 			return nil
 		})
 	if err != nil {
