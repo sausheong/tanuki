@@ -5,49 +5,49 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"os"
 
 	"github.com/sausheong/tanuki/structs"
 )
 
 func main() {
-	listener, err := net.Listen("tcp", ":0")
-	fmt.Println(listener.Addr().String())
+	// start a TCP socket server at the given port
+	// the port number is the STDIN when starting the listener
+	listener, err := net.Listen("tcp", ":"+os.Args[1])
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	defer listener.Close()
 
+	// listen to connections and send the requests to the handler
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-
-		go handleConnection(conn)
+		go handleRequest(conn)
 	}
 }
 
-func handleConnection(conn net.Conn) {
-	fmt.Printf("Serving %s\n", conn.RemoteAddr().String())
-	response := `{"status": %d, "header": %s, "body": "%s"}`
+// handle the request
+func handleRequest(conn net.Conn) {
+	response := `{"status": %d, "header": %s, "body": "%s"}` + "\n"
 	headers := make(map[string][]string)
 
 	for {
 		data, err := bufio.NewReader(conn).ReadBytes('\n')
 		if err != nil {
-			fmt.Println("Cannot read from buffer", err)
-			h, _ := json.Marshal(headers)
-			conn.Write([]byte(fmt.Sprintf(response, 500, h, "Cannot read from buffer")))
+			fmt.Println("Cannot read from buffer - ", err)
+			conn.Write([]byte(fmt.Sprintf(response, 500, "{}", "Cannot read from buffer - "+err.Error())))
 			return
 		}
 		var request structs.RequestInfo
-		err = json.Unmarshal(data, &request)
+		err = json.Unmarshal([]byte(data), &request)
 		if err != nil {
-			fmt.Println("Cannot unmarshal JSON", err)
-			h, _ := json.Marshal(headers)
-			conn.Write([]byte(fmt.Sprintf(response, 500, h, "Cannot unmarshal JSON")))
+			fmt.Println("Cannot unmarshal JSON - ", err)
+			conn.Write([]byte(fmt.Sprintf(response, 500, "{}", "Cannot unmarshal JSON - "+err.Error())))
 			return
 		}
 

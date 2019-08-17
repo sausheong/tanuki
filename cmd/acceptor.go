@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
@@ -21,6 +22,7 @@ import (
 )
 
 var bins []string
+var listeners map[string]string
 var port *int
 var ip *net.IP
 var static *string
@@ -34,6 +36,7 @@ func init() {
 	static = acceptorCmd.Flags().String("static", "static", "directory for static files")
 	readTimeout = acceptorCmd.Flags().Int64("readtimeout", 10, "server read time-out")
 	writeTimeout = acceptorCmd.Flags().Int64("writetimeout", 600, "server write time-out")
+	listeners = make(map[string]string)
 }
 
 var acceptorCmd = &cobra.Command{
@@ -48,6 +51,9 @@ this command only in the Tanuki application root.`,
 
 func start() {
 	getAllBins()
+	getAllListeners()
+	fmt.Println("listeners:", listeners)
+
 	router := httprouter.New()
 
 	// currently supports GET and POST only
@@ -71,7 +77,8 @@ func start() {
 
 // performs the main processing for the acceptor
 func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Params) {
-	fmt.Println("Tanuki accepting", request.Method, "request", request.URL)
+	fmt.Print("Tanuki accepting ", request.Method, " request ", request.URL, " - ")
+	start := time.Now()
 	// the multipart contains the multipart data
 	multipart := make(map[string][]structs.Multipart)
 
@@ -116,6 +123,8 @@ func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Para
 	}
 
 	// create the struct for the JSON
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(request.Body)
 	reqInfo := structs.RequestInfo{
 		Method: request.Method,
 		URL: structs.URLInfo{
@@ -128,7 +137,7 @@ func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Para
 		},
 		Proto:            request.Proto,
 		Header:           request.Header,
-		Body:             request.Body,
+		Body:             buf.String(),
 		ContentLength:    request.ContentLength,
 		TransferEncoding: request.TransferEncoding,
 		Host:             request.Host,
@@ -139,7 +148,6 @@ func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Para
 	}
 	// marshal the RequestInfo struct into JSON
 	reqJSON, err := json.Marshal(reqInfo)
-	fmt.Println(string(reqJSON))
 	if err != nil {
 		danger("Failed to marshal the request into JSON", err)
 	}
@@ -151,16 +159,34 @@ func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Para
 	// if if it's in the bins, run it
 	if exists(bins, routeID) {
 		// execute the bin and get a JSON output
+
 		output, err = exec.Command(join("bin/", routeID), string(reqJSON)).Output()
 		if err != nil {
 			danger("Cannot execute bin", err)
 		}
-		info("Action called", request.Method, request.URL.Path, join("(", routeID, ")"))
+		info("Binary called", request.Method, request.URL.Path, join("(", routeID, ") - ", time.Since(start).String()))
 	} else {
-		reply(writer, 404, []byte("Tanuki action not found"))
-		info("Action not found", request.Method, request.URL.Path, join("(", routeID, ")"))
-		return
+		// if it's in the listeners, run it
+		if addr, ok := listeners[routeID]; ok {
+			start := time.Now()
+			conn, err := net.Dial("tcp", ":"+addr)
+			if err != nil {
+				danger("Cannot connect to listener", err)
+			}
+			fmt.Fprintf(conn, string(reqJSON)+"\n")
+			// listen for reply
+			output, err = bufio.NewReader(conn).ReadBytes('\n')
+			if err != nil {
+				fmt.Println("Cannot read from listener", err)
+			}
+			info("Listener called", request.Method, request.URL.Path, join("(", routeID, ") - ", time.Since(start).String()))
+		} else {
+			reply(writer, 404, []byte("Tanuki action not found"))
+			info("Action not found", request.Method, request.URL.Path, join("(", routeID, ")"))
+			return
+		}
 	}
+
 	// parse the JSON output
 	var response structs.ResponseInfo
 	err = json.Unmarshal([]byte(output), &response)
@@ -189,7 +215,7 @@ func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Para
 	} else {
 		data = []byte(response.Body) // if not given the content type, assume it's text
 	}
-
+	fmt.Println(time.Since(start).String())
 	// respond to the client
 	reply(writer, response.Status, data)
 
@@ -209,11 +235,11 @@ func isTextMimeType(ctype string) bool {
 	return false
 }
 
-func getBin(method, path string) (binPath string) {
-	binPath = join(strings.ToUpper(method), "__", strings.ReplaceAll(path, "/", "__"))
+// func getBin(method, path string) (binPath string) {
+// 	binPath = join(strings.ToUpper(method), "__", strings.ReplaceAll(path, "/", "__"))
 
-	return
-}
+// 	return
+// }
 
 // load all bins into the bins variable
 func getAllBins() {
@@ -231,5 +257,32 @@ func getAllBins() {
 		})
 	if err != nil {
 		danger("Cannot load bins", err)
+	}
+}
+
+// load all listeners into the listeners variable
+func getAllListeners() {
+
+	err := filepath.Walk("listeners",
+		func(path string, fileinfo os.FileInfo, err error) error {
+			// not a directory
+			if !fileinfo.IsDir() {
+				// must be an executable file
+				if fileinfo.Mode()&0100 == os.FileMode(0000100) {
+					port, err := getFreePort()
+					if err != nil {
+						fmt.Println("Cannot get port", err)
+					}
+					listeners[fileinfo.Name()] = strconv.Itoa(port)
+
+					go exec.Command(path, strconv.Itoa(port)).Run()
+					fmt.Println("listener started:", path, port)
+				}
+			}
+
+			return nil
+		})
+	if err != nil {
+		danger("Cannot load listeners", err)
 	}
 }

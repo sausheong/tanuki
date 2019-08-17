@@ -1,14 +1,12 @@
 package structs
 
-import "io"
-
 // RequestInfo corresponds to a HTTP 1.1 request
 type RequestInfo struct {
 	Method           string                 `json:"Method"`
 	URL              URLInfo                `json:"URL"`
 	Proto            string                 `json:"Proto"`
 	Header           map[string][]string    `json:"Header"`
-	Body             io.ReadCloser          `json:"Body"`
+	Body             string                 `json:"Body"`
 	ContentLength    int64                  `json:"ContentLength"`
 	TransferEncoding []string               `json:"TransferEncoding"`
 	Host             string                 `json:"Host"`
