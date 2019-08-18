@@ -2,7 +2,7 @@
 
 Tanuki is a polyglot web framework that allows developers to write a web application or service in multiple programming languages. The basic concept is simple -- an acceptor (which is a HTTP server) accepts HTTP requests and redirects it to either an executable binary (or script) or a TCP socket server to handle. These handlers can be written in different programming languages and run independently from each other.
 
-Tanuki is :contruction: _experimental_ software at this point in time. Use at your own risk! :warning:
+Tanuki is :construction: _experimental_ software at this point in time. Use at your own risk! :warning:
 
 ## Installing Tanuki
 
