@@ -325,11 +325,11 @@ Nonetheless because it works differently, first time developers on Tanuki would 
 
 Of course. Tanuki is not for every web application or service, and there seems to be additional effort to do something that could be relatively simple. The real benefits of Tanuki is really with longer term maintenance of the entire system. 
 
-### Isn't this the same as CGI (Common Gateway Interface)?
+### Isn't this the same as [CGI (Common Gateway Interface)](https://en.wikipedia.org/wiki/Common_Gateway_Interface)?
 
 Yes and no. Tanuki is partially inspired by CGI but there are some significant differences. In CGI, data to the CGI scripts are passed using environment variables, while in Tanuki it is sent into the bin through the command line argument as a JSON request. The Tanuki JSON request is also much more closer to the actual HTTP request.
 
-Tanuki uses TCP socket servers as listeners to reduce the overhead of creating one process per requeset. This method is very similar to that of FastCGI but has a much simpler implementation. Also for FastCGI, a web application or service is meant for a single programming language only.
+Tanuki uses TCP socket servers as listeners to reduce the overhead of creating one process per requeset. This method is very similar to that of [FastCGI](https://en.wikipedia.org/wiki/FastCGI) but has a much simpler implementation. Also for FastCGI, a web application or service is built using a single programming language only. While FastCGI APIs exist for multiple languages, the intent was never to write one web application or service using more than one.
 
 So for the implementations the mechanisms are close but not the same (Tanuki is simpler), neither CGI or FastCGI is meant for multiple programming languages like Tanuki is for.
 
