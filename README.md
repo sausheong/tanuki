@@ -1,8 +1,8 @@
 # Tanuki
 
-Tanuki is a polyglot web framework that allows developers to write web applications and services in multiple programming languages. The basic concept is simple -- an acceptor (which is a HTTP server) accepts HTTP requests and redirects it to either an executable binary file (or script) or a TCP socket server to handle. These handlers can be written in different programming languages and run independently from each other.
+Tanuki is a polyglot web framework that allows developers to write a web application or service in multiple programming languages. The basic concept is simple -- an acceptor (which is a HTTP server) accepts HTTP requests and redirects it to either an executable binary (or script) or a TCP socket server to handle. These handlers can be written in different programming languages and run independently from each other.
 
-Tanuki is experimental software at this point in time. Use at your own risk.
+Tanuki is :contruction: _experimental_ software at this point in time. Use at your own risk! :warning:
 
 ## Installing Tanuki
 
@@ -306,7 +306,15 @@ Since every handler (bin or listener) is a separate process, neither code nor da
 
 Because the different handlers need to totally independent, there are additional overheads and complexities. For example, you need to parse the JSON request yourself and craft a JSON response almost in the raw. Besides adding to processing needs (and therefore lower performance) it also adds complexities in the code. And more complex code is overall harder to maintain.
 
-On the other hand, some of the complexities can be grouped into reusable libraries, which helps to reduce the overheads. 
+On the other hand, some of the complexities can be grouped into reusable libraries, which helps to reduce the overheads.
+
+### Not the same with other web frameworks
+
+If you're familiar with other web frameworks, many of them work the same way. Tanuki is quite different from other frameworks because of it the way it works. You might even argue that calling it a web framework is a bit of a stretch but I would beg to differ, from [this definition from Wikipedia](https://en.wikipedia.org/wiki/Web_framework).
+
+> A web framework (WF) or web application framework (WAF) is a software framework that is designed to support the development of web applications including web services, web resources, and web APIs. Web frameworks provide a standard way to build and deploy web applications on the World Wide Web. Web frameworks aim to automate the overhead associated with common activities performed in web development. 
+
+Nonetheless because it works differently, first time developers on Tanuki would find a steeper learning curve. For example, if you're used to having a authentication and authorization drop-in library for other web frameworks, in Tanuki you might need to build that in yourself. To do this you might need to set and get the cookies to keep the state when you go from action to action.
 
 ## I'm still skeptical
 
