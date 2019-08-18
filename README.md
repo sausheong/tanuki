@@ -185,7 +185,7 @@ hello sausheong
 
 ### Executable binaries or scripts
 
-Executable binaries or scripts (bins) are found in the `/bin` directory. When Tanuki starts, it will look into the `/bin` directory and create a list of all valid bins. Each bin handler must be in the format `METHOD__PATH` (note the double underscore) where `METHOD` is the HTTP method eg. GET or POST and `PATH` is the URL path, with the forward slashes `/` converted into double underscores `__`. For example, if a GET is sent to URL called is `/_/hello/world`, Tanuki will look for a bin in with the name `get__hello__world`. In other words, the _name_ of the bin handler determines which action and URL it maps to.
+Executable binaries or scripts (bins) are found in the `/bin` directory. When Tanuki starts, it will look into the `/bin` directory and create a list of all valid bins. Each bin handler must be in the format `METHOD__PATH` (note the double underscore) where `METHOD` is the HTTP method eg. GET or POST and `PATH` is the URL path, with the forward slashes `/` converted into double underscores `__`. For example, if a GET is sent to URL called is `/_/hello/ruby`, Tanuki will look for a bin in with the name `get__hello__ruby`. In other words, the _name_ of the bin handler determines which action and URL it maps to.
 
 This bin takes in a JSON with the HTTP request information as the command line argument and returns a JSON with the HTTP response information to STDOUT.
 
