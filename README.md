@@ -156,6 +156,108 @@ type ResponseInfo struct {
 }
 ```
 
+Here's an example of the response JSON to be sent back to Tanuki.
+
+```json
+{
+  "status": 200,
+  "header": {
+    "Content-Length": ["15"],
+    "Content-Type": ["text/plain; charset=utf-8"]
+  },
+  "body": "hello sausheong"
+}
+```
+## Examples
+
+Let's look at some examples. They are pretty simple and almost trivial and does one thing. When the user browses the URL:
+
+```
+https://localhost:8081/_/hello/world?name=sausheong
+```
+
+The handlers should return:
+
+```
+hello sausheong
+```
+
+
+### Executable binaries or scripts
+
+Executable binaries or scripts (bins) are found in the `/bin` directory. When Tanuki starts, it will look into the `/bin` directory and create a list of all valid bins. Each bin handler must be in the format `METHOD__PATH` (note the double underscore) where `METHOD` is the HTTP method eg. GET or POST and `PATH` is the URL path, with the forward slashes `/` converted into double underscores `__`. For example, if a GET is sent to URL called is `/_/hello/world`, Tanuki will look for a bin in with the name `get__hello__world`. In other words, the _name_ of the bin handler determines which action and URL it maps to.
+
+This bin takes in a JSON with the HTTP request information as the command line argument and returns a JSON with the HTTP response information to STDOUT.
+
+This is an example of a simple bin handler written in Ruby.
+
+```ruby
+#!/usr/bin/env ruby
+require 'json'
+
+request = JSON.parse ARGV[0]
+response = {
+    status: 200,
+    header: {},
+    body: "hello #{request['Params']['name'][0]}"
+}
+puts response.to_json
+```
+
+The code above shows how the first command line argument to the script `ARGV[0]` is parsed into JSON, and the parameters are used in the body. The response is created first as a hash and converted into JSON before being printed out to STDOUT.
+
+Here's another, written in bash script!
+
+```bash
+#!/usr/bin/env bash
+
+name=$(echo $1|jq '.["Params"]["name"][0]'|tr -d \")
+cat <<- _EOF_
+{
+    "status": 200, 
+    "header": {}, 
+    "body": "hello $name"
+}
+_EOF_
+```
+
+For this I use the [`jq` tool](https://stedolan.github.io/jq/), a lightweight command line JSON processor. It parses the first command line argument `$1` and extracts the `name` from the `Params` field, which I then use to output back to STDOUT.
+
+### Listeners
+
+Listeners are found in the `/listeners` directory. Listeners are TCP socket servers. When Tanuki starts, it will look into the `/listeners` directory and starts up all listeners it can find in the directory. It does this by calling the listener and passing the port to it as an argument.
+
+The rule for calling the listener is the same as with the bins above, that is, the name of the listener determines which action and URL it maps to. When a request comes it, Tanuki creates a TCP connection to the listener and sends in the JSON HTTP request. Important to remember that the JSON request will end with a newline `\n` so when writing the listener you should use this to detect the end of the JSON string.
+
+The listener must return a JSON HTTP response as above through the same connection.
+
+This is an example of a simple listener written in Python.
+
+```python
+#!/usr/bin/env python
+
+import socket
+import sys
+import json
+
+HOST = '0.0.0.0'
+PORT = sys.argv[1]
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    s.bind((HOST, int(PORT)))
+    s.listen()
+    while True:
+        conn, addr = s.accept()
+        with conn:
+            data = conn.recv(1024)
+            request = json.loads(data)
+            response = {
+                'status': 200,
+                'header': {},
+                'body': "hello " + request['Params']['name'][0]
+            }
+            conn.sendall(str.encode(json.dumps(response)+"\n", 'utf-8' ))
+```
 
 
 ## Why Tanuki?
@@ -174,3 +276,14 @@ It seems a bit of work to write a single web application in different programmin
 
 
 ## What's the trade-off?
+
+You can't win 'em all. There's always a trade-off somewhere. Whether the trade-off is worth it depends very much on the web application or service itself. Here are some draw-backs of using Tanuki (besides the point that this is still an _experimental_ software!).
+
+### Worse performance
+
+Performance is definitely affected. In the case of bins, every time the action is called, the script is called to execute and return. Listeners are better because they are already running TCP servers, but the effort to create a socket connection and send the request JSON across has overhead. Nonetheless, if the processing done is significant, the percentage of the overhead could be small in comparison.
+
+### No sharing of code or in-memory data
+
+Since every handler (bin or listener) is a separate process, neither code nor data can be shared between them. To share data, you will need an intermediate store, for e.g. a database or a key-value store etc. To share code, one way of getting around it to is to use libraries. 
+
