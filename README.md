@@ -266,14 +266,29 @@ It seems a bit of work to write a single web application in different programmin
 
 ### No more fighting
 
+In any team with multiple capabilities, it's inevitable there's always going to be some programming language or library or tool war on which  technology to use. With Tanuki, you can opt for _all of the above_ since you can (if you want) write every handler in a different programming language or use different libraries or even different versions.
+
+Why you would want to do that is to really tap on the different strengths of the various languages and libraries as needed.
+
 ### Easy upgrade
 
-### Switching technologies
+Most professional developers have one time or another in their careers needed to take over _legacy_ projects and code. Sometimes it could even be your own legacy code! For example if you have written a large web application using version 2.1 of a web framework a few years ago and now you need to upgrade to version 5.2 this could be pretty painful. Every library you used then would have been new versions and some of them would be incompatible with each other. Very often it's a multi-month or even year project to upgrade the whole application.
+
+With Tanuki you can easily upgrade different parts of the same application over time. And because each handler is a separate piece of software on its own, you can opt to keep using the different versions of the libraries in them!
 
 ### Modular replacement
 
+In your career you'd also probably need to take over someone else's project and change or add new features. If the project was written in a programming language or uses a library or tool you don't know, you probably have to spent lots of time learning the new technologies, or try to re-write the whole thing using your own technology stack (very often, the answer is a flat no).
+
+However, if the web application was written in Tanuki, you can opt to switch out parts of the project to change, and add new features in your own stack and keep the ones that don't need to change intact!
+
 ### Easy testing
 
+Another real benefit is that because each handler has standard input and output in a fixed format, testing the handlers can be pretty independent. In fact you can do test-driven development by writing the tests first and start writing the handlers until they all pass. You can also write the tests in one language and test the handlers written in other languages!
+
+### Independent development
+
+Another advantage especially if this is a large application or service and a number of developers are working on it at the same time is that you can farm out handlers to different people to write in different technology stacks, as long as they pass the tests!
 
 ## What's the trade-off?
 
@@ -287,3 +302,12 @@ Performance is definitely affected. In the case of bins, every time the action i
 
 Since every handler (bin or listener) is a separate process, neither code nor data can be shared between them. To share data, you will need an intermediate store, for e.g. a database or a key-value store etc. To share code, one way of getting around it to is to use libraries. 
 
+### Added complexities
+
+Because the different handlers need to totally independent, there are additional overheads and complexities. For example, you need to parse the JSON request yourself and craft a JSON response almost in the raw. Besides adding to processing needs (and therefore lower performance) it also adds complexities in the code. And more complex code is overall harder to maintain.
+
+On the other hand, some of the complexities can be grouped into reusable libraries, which helps to reduce the overheads. 
+
+## I'm still skeptical
+
+Of course. Tanuki is not for every web application or service, and there seems to be additional effort to do something that could be relatively simple. The real benefits of Tanuki is really with longer term maintenance of the entire system. 
