@@ -229,9 +229,11 @@ Listeners are found in the `/listeners` directory. Listeners are TCP socket serv
 
 The rule for calling the listener is the same as with the bins above, that is, the name of the listener determines which action and URL it maps to. When a request comes it, Tanuki creates a TCP connection to the listener and sends in the JSON HTTP request. Important to remember that the JSON request will end with a newline `\n` so when writing the listener you should use this to detect the end of the JSON string.
 
+In the same way when you write your listener and construct a JSON HTTP response, you must end the JSON with a newline `\n`.
+
 The listener must return a JSON HTTP response as above through the same connection.
 
-This is an example of a simple listener written in Python.
+This is an example of a simple listener written in Python. The file name is `get__hello__python__listener` and the listener will be triggered when a GET request is sent to the URL `/_/hello/python/listener?name=sausheong`
 
 ```python
 #!/usr/bin/env python
@@ -258,6 +260,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             }
             conn.sendall(str.encode(json.dumps(response)+"\n", 'utf-8' ))
 ```
+
 
 
 ## Why Tanuki?
@@ -316,6 +319,20 @@ If you're familiar with other web frameworks, many of them work the same way. Ta
 
 Nonetheless because it works differently, first time developers on Tanuki would find a steeper learning curve. For example, if you're used to having a authentication and authorization drop-in library for other web frameworks, in Tanuki you might need to build that in yourself. To do this you might need to set and get the cookies to keep the state when you go from action to action.
 
-## I'm still skeptical
+## FAQs
+
+### I'm still skeptical
 
 Of course. Tanuki is not for every web application or service, and there seems to be additional effort to do something that could be relatively simple. The real benefits of Tanuki is really with longer term maintenance of the entire system. 
+
+### Isn't this the same as CGI (Common Gateway Interface)?
+
+Yes and no. Tanuki is partially inspired by CGI but there are some significant differences. In CGI, data to the CGI scripts are passed using environment variables, while in Tanuki it is sent into the bin through the command line argument as a JSON request. The Tanuki JSON request is also much more closer to the actual HTTP request.
+
+Tanuki uses TCP socket servers as listeners to reduce the overhead of creating one process per requeset. This method is very similar to that of FastCGI but has a much simpler implementation. Also for FastCGI, a web application or service is meant for a single programming language only.
+
+So for the implementations the mechanisms are close but not the same (Tanuki is simpler), neither CGI or FastCGI is meant for multiple programming languages like Tanuki is for.
+
+### You were working on Polyglot earlier, what happened to it?
+
+Polyglot was a previous incarnation of the same idea that I've been mulling over for many years, Tanuki is the latest. I've stopped working on Polyglot already.
