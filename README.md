@@ -1,3 +1,7 @@
+<div id="logo" align="center">
+    <img src="tanuki.png" alt="Theia Logo" width="150"/>
+</div>
+
 # Tanuki
 
 Tanuki is a polyglot web framework that allows developers to write a web application or service in multiple programming languages. The basic concept is simple -- an acceptor (which is a HTTP server) accepts HTTP requests and redirects it to either an executable binary (or script) or a TCP socket server to handle. These handlers can be written in different programming languages and run independently from each other.
