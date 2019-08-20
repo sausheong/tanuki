@@ -340,3 +340,7 @@ So for the implementations the mechanisms are close but not the same (Tanuki is 
 ### You were working on Polyglot earlier, what happened to it?
 
 Polyglot was a previous incarnation of the same idea that I've been mulling over for many years, Tanuki is the latest. I've stopped working on Polyglot already.
+
+## Credits
+
+Thanks to Jasmine Lim for the seriously cute mascot!
