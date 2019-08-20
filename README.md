@@ -1,5 +1,5 @@
 <div id="logo" align="center">
-    <img src="tanuki.png" alt="Theia Logo" width="150"/>
+    <img src="tanuki.png" alt="Tanuki" width="150"/>
 </div>
 
 # Tanuki
