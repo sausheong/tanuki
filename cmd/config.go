@@ -6,69 +6,35 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type Executable struct {
+type Handler struct {
 	Method string `yaml:"method"`
 	Route  string `yaml:"route"`
-	File   string `yaml:"file"`
-}
-
-type Executables []Executable
-
-type Listener struct {
-	Method string `yaml:"method"`
-	Route  string `yaml:"route"`
-	Local  bool   `yaml:"local"`
-	Path   string `yaml:"path"`
+	Type   string `yaml:"type"`
+	Local  bool   `yaml:"local,omitempty"` // only for listeners
+	Path   string `yaml:"path"`            // file path if bin or local listener, host:port to remote listener
 	Port   string
 }
 
-type Listeners []Listener
+type Handlers []Handler
 
-func getBins() (bins Executables, err error) {
-	data, err := ioutil.ReadFile("bins.yaml")
+func getHandlers(path string) (handlers Handlers, err error) {
+	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		danger("Cannot read bins.yaml file", err)
+		danger("Cannot read handlers.yaml file", err)
 		return
 	}
-	err = yaml.Unmarshal(data, &bins)
+	err = yaml.Unmarshal(data, &handlers)
 	if err != nil {
-		danger("Cannot unmarshal bins.yaml file", err)
+		danger("Cannot unmarshal handlers.yaml file", err)
 		return
 	}
 	return
 }
 
-func (bins Executables) getBin(method, route string) (file string, ok bool) {
-	for _, bin := range bins {
-		if bin.Method == method && bin.Route == route {
+func (handlers Handlers) getHandler(method, route string) (handler Handler, ok bool) {
+	for _, handler = range handlers {
+		if handler.Method == method && handler.Route == route {
 			ok = true
-			file = bin.File
-			return
-		}
-	}
-	ok = false
-	return
-}
-
-func getListeners() (list Listeners, err error) {
-	data, err := ioutil.ReadFile("listeners.yaml")
-	if err != nil {
-		danger("Cannot read listeners.yaml file", err)
-		return
-	}
-	err = yaml.Unmarshal(data, &list)
-	if err != nil {
-		danger("Cannot unmarshal listeners.yaml file", err)
-		return
-	}
-	return
-}
-
-func (list Listeners) getListener(method, route string) (l Listener, ok bool) {
-	for _, listener := range list {
-		if listener.Method == method && listener.Route == route {
-			ok = true
-			l = listener
 			return
 		}
 	}

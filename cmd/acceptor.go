@@ -19,14 +19,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var bins Executables
-var listeners Listeners
+var handlers Handlers
 
 var port *int
 var ip *net.IP
 var static *string
 var readTimeout *int64
 var writeTimeout *int64
+var handlerConfig *string
 
 func init() {
 	rootCmd.AddCommand(acceptorCmd)
@@ -35,7 +35,7 @@ func init() {
 	static = acceptorCmd.Flags().String("static", "static", "directory for static files")
 	readTimeout = acceptorCmd.Flags().Int64("readtimeout", 10, "server read time-out")
 	writeTimeout = acceptorCmd.Flags().Int64("writetimeout", 600, "server write time-out")
-
+	handlerConfig = acceptorCmd.Flags().String("handlerConfig", "handlers.yaml", "handler configuration file")
 }
 
 var acceptorCmd = &cobra.Command{
@@ -52,22 +52,15 @@ func start() {
 	// getAllBins()
 	// getAllListeners()
 	var err error
-	bins, err = getBins()
+	handlers, err = getHandlers(*handlerConfig)
 	if err != nil {
-		danger("Cannot load binaries", err)
-		fmt.Println("Cannot load binaries configuration, please check the bins.yaml file", err)
+		danger("Cannot load handlers", err)
+		fmt.Println("Cannot load handlers configuration, please check the handlers.yaml file", err)
 		return
 	}
-	fmt.Println("bins:", bins)
-	listeners, err = getListeners()
-	if err != nil {
-		danger("Cannot load listeners", err)
-		fmt.Println("Cannot load listeners configuration, please check the listeners.yaml file", err)
-		return
-	}
+	fmt.Println("handlers:", handlers)
 
-	loadActiveListeners()
-
+	startLocalListeners()
 	router := httprouter.New()
 
 	// currently supports GET and POST only
@@ -173,43 +166,43 @@ func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Para
 	// ------------
 	var output []byte
 
-	// bins are executable binary files. Tanuki walks through the bin/ directory to look for
-	// executable binaries and adds them to a list. Each binary takes in a request JSON through the
-	// command line argument and returns a response JSON through STDOUT. When a route matches the
-	// name of the binary, Tanuki will call the binary with the request JSON as the argument and
-	// parses the return output as a response JSON
+	// hand off to the correct handlers
+	if handler, ok := handlers.getHandler(strings.ToLower(request.Method), request.URL.Path); ok {
+		switch handlerType := handler.Type; handlerType {
+		case "bin":
+			// bins are executable binary files. Tanuki walks through the bin/ directory to look for
+			// executable binaries and adds them to a list. Each binary takes in a request JSON through the
+			// command line argument and returns a response JSON through STDOUT. When a route matches the
+			// name of the binary, Tanuki will call the binary with the request JSON as the argument and
+			// parses the return output as a response JSON
+			output, err = exec.Command(handler.Path, string(reqJSON)).Output()
+			if err != nil {
+				danger("Cannot execute bin", err)
+			}
+			info("Binary called", request.Method, join("(", handler.Path, ") - ", time.Since(start).String()))
 
-	// if if it's in the bins, run it
-	if file, ok := bins.getBin(strings.ToLower(request.Method), request.URL.Path); ok {
-		// execute the bin and get a response JSON output
-		output, err = exec.Command(file, string(reqJSON)).Output()
-		if err != nil {
-			danger("Cannot execute bin", err)
-		}
-		info("Binary called", request.Method, request.URL.Path, join("(", file, ") - ", time.Since(start).String()))
-	} else {
-
-		// listeners are TCP socket servers. Tanuki walks through files in the listener/ directory, and starts
-		// each listener, adding it to a hash, with the routeID of the listener as the key and the port number
-		// of the TCP server as the value. Each listener takes in a request JSON (terminated by a newline \n)
-		// and returns a response JSON through the same connection. Listeners are supposed to be more performant
-		// because they can be multi-threaded and also already started up, unlike binaries
-
-		// if it's in the listeners, run it
-		fmt.Println(request.Method, request.URL.Path)
-		if listener, ok := listeners.getListener(request.Method, request.URL.Path); ok {
-			fmt.Println("listener port:", listener.Path, listener.Port)
-			start := time.Now()
+		case "listener":
+			// listeners are TCP socket servers. Tanuki walks through files in the listener/ directory, and starts
+			// each listener, adding it to a hash, with the routeID of the listener as the key and the port number
+			// of the TCP server as the value. Each listener takes in a request JSON (terminated by a newline \n)
+			// and returns a response JSON through the same connection. Listeners are supposed to be more performant
+			// because they can be multi-threaded and also already started up, unlike binaries
 			var conn net.Conn
-			if listener.Local {
-				conn, err = net.Dial("tcp", ":"+listener.Port)
+			if handler.Local {
+				conn, err = net.Dial("tcp", ":"+handler.Port)
 				if err != nil {
+					reply(writer, 404, []byte("Cannot connect to listener"))
 					danger("Cannot connect to listener", err)
+					fmt.Println(time.Since(start).String())
+					return
 				}
 			} else {
-				conn, err = net.Dial("tcp", listener.Path)
+				conn, err = net.Dial("tcp", handler.Path)
 				if err != nil {
+					reply(writer, 404, []byte("Cannot connect to listener"))
 					danger("Cannot connect to listener", err)
+					fmt.Println(time.Since(start).String())
+					return
 				}
 			}
 			fmt.Fprintf(conn, string(reqJSON)+"\n")
@@ -218,13 +211,20 @@ func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Para
 			if err != nil {
 				fmt.Println("Cannot read from listener", err)
 			}
-			info("Listener called", request.Method, request.URL.Path, join(listener.Path, time.Since(start).String()))
-		} else {
-			reply(writer, 404, []byte("Tanuki action not found"))
-			info("Action not found", request.Method, request.URL.Path, listener.Path)
+			info("Listener called", request.Method, join(handler.Path, time.Since(start).String()))
+
+		default:
+			reply(writer, 404, []byte("Handler type not found"))
+			info("Handler type not found", request.Method, request.URL.Path, handler.Path)
 			fmt.Println(time.Since(start).String())
 			return
 		}
+
+	} else {
+		reply(writer, 404, []byte("Tanuki action not found"))
+		info("Action not found", request.Method, request.URL.Path, handler.Path)
+		fmt.Println(time.Since(start).String())
+		return
 	}
 
 	// ----------------
@@ -279,69 +279,23 @@ func isTextMimeType(ctype string) bool {
 	return false
 }
 
-func loadActiveListeners() {
-	for _, listener := range listeners {
-		if listener.Local {
+func startLocalListeners() {
+	for i, handler := range handlers {
+		if handler.Type == "listener" && handler.Local {
 			// get a free port for the listener
 			port, err := getFreePort()
 			if err != nil {
 				fmt.Println("Cannot get port", err)
 			}
 			// start the listener and pass it the port number
-			go exec.Command(listener.Path, strconv.Itoa(port)).Run()
-			listener.Port = strconv.Itoa(port)
-			fmt.Println("listener started:", listener.Path, port)
+			go exec.Command(handler.Path, strconv.Itoa(port)).Run()
+			handlers[i].Port = strconv.Itoa(port)
+			fmt.Println("handler started:", handler.Path, port)
 		} else {
-			_, err := net.Dial("tcp", listener.Path)
+			_, err := net.Dial("tcp", handler.Path)
 			if err != nil {
-				danger("Cannot connect to", listener.Path, err)
+				danger("Cannot connect to", handler.Path, err)
 			}
 		}
 	}
 }
-
-// // load all bins into the bins variable
-// func getAllBins() {
-// 	err := filepath.Walk("bin",
-// 		func(path string, info os.FileInfo, err error) error {
-// 			// not a directory
-// 			if !info.IsDir() {
-// 				// must be an executable file
-// 				if info.Mode()&0100 == os.FileMode(0000100) {
-// 					bins = append(bins, info.Name())
-// 					fmt.Println("binary added:", info.Name())
-// 				}
-// 			}
-// 			return nil
-// 		})
-// 	if err != nil {
-// 		danger("Cannot load bins", err)
-// 	}
-// }
-
-// // load all listeners into the listeners variable
-// func getAllListeners() {
-// 	err := filepath.Walk("listeners",
-// 		func(path string, fileinfo os.FileInfo, err error) error {
-// 			// not a directory
-// 			if !fileinfo.IsDir() {
-// 				// must be an executable file
-// 				if fileinfo.Mode()&0100 == os.FileMode(0000100) {
-// 					// get a free port for the listener
-// 					port, err := getFreePort()
-// 					if err != nil {
-// 						fmt.Println("Cannot get port", err)
-// 					}
-// 					// put it in a hash of listeners with the port number
-// 					listeners[fileinfo.Name()] = strconv.Itoa(port)
-// 					// start the listener and pass it the port number
-// 					go exec.Command(path, strconv.Itoa(port)).Run()
-// 					fmt.Println("listener started:", path, port)
-// 				}
-// 			}
-// 			return nil
-// 		})
-// 	if err != nil {
-// 		danger("Cannot load listeners", err)
-// 	}
-// }

@@ -1,0 +1,22 @@
+--- # handlers
+- method : get
+  route  : /_/hello/ruby
+  type   : bin
+  path   : bin/get__hello__ruby
+
+- method : get
+  route  : /_/hello/go
+  type   : bin
+  path   : bin/get__hello__go
+
+- method : get
+  route  : /_/hello/ruby/listener
+  type   : listener
+  local  : true 
+  path   : listeners/get__hello__ruby__listener
+
+- method : get
+  route  : /_/hello/go/listener
+  type   : listener
+  local  : false
+  path   : localhost:55771

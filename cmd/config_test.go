@@ -4,13 +4,13 @@ import (
 	"testing"
 )
 
-func TestGetBins(t *testing.T) {
-	bins, err := getBins()
+func TestGetListeners(t *testing.T) {
+	handlers, err := getHandlers("../handlers.yaml")
 	if err != nil {
 		t.Error(err)
 	}
-	t.Log("test bins:", bins)
-	if bins[0].Method != "get" {
-		t.Error("Unmarshal failed:", bins[0].Method)
+	t.Log("handlers:", handlers)
+	if handlers[0].Method != "get" {
+		t.Error("Unmarshal failed:", handlers[0].Method)
 	}
 }
