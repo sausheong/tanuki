@@ -13,7 +13,7 @@ import (
 
 func TestGetHelloRubyListener(t *testing.T) {
 	port := 59559
-	go exec.Command("../listeners/get__hello__ruby__listener", strconv.Itoa(port)).Run()
+	go exec.Command("../listeners/hello-ruby", strconv.Itoa(port)).Run()
 	time.Sleep(time.Second)
 	conn, err := net.Dial("tcp", ":"+strconv.Itoa(port))
 	if err != nil {

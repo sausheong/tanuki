@@ -8,7 +8,7 @@ import (
 
 func TestGetHelloRubyBin(t *testing.T) {
 	expected := `{"status":200,"header":{},"body":"hello sausheong"}` + "\n"
-	output, err := exec.Command("../bin/get__hello__ruby", reqJSON).Output()
+	output, err := exec.Command("../bin/hello-ruby", reqJSON).Output()
 	if err != nil {
 		t.Error("Cannot execute binary", err)
 	}

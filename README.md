@@ -68,18 +68,18 @@ Handlers are configured in a `handlers.yaml` file by default. This is how a hand
 - method : get
   route  : /_/hello/ruby
   type   : bin
-  path   : bin/get__hello__ruby
+  path   : bin/hello-ruby
 
 - method : get
   route  : /_/hello/go
   type   : bin
-  path   : bin/get__hello__go
+  path   : bin/hello-go
 
 - method : get
   route  : /_/hello/ruby/listener
   type   : listener
   local  : true 
-  path   : listeners/get__hello__ruby__listener
+  path   : listeners/hello-ruby
 
 - method : get
   route  : /_/hello/go/listener
@@ -273,7 +273,7 @@ In the same way when you write your listener and construct a JSON HTTP response,
 
 The listener must return a JSON HTTP response as above through the same connection.
 
-This is an example of a simple listener written in Python. The file name is `get__hello__python__listener` and the listener will be triggered when a GET request is sent to the URL `/_/hello/python/listener?name=sausheong`
+This is an example of a simple listener written in Python. The file name is `listeners/hello-python` and the listener will be triggered when a GET request is sent to the URL `/_/hello/python/listener?name=sausheong`
 
 ```python
 #!/usr/bin/env python

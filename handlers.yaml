@@ -2,18 +2,18 @@
 - method : get
   route  : /_/hello/ruby
   type   : bin
-  path   : bin/get__hello__ruby
+  path   : bin/hello-ruby
 
 - method : get
   route  : /_/hello/go
   type   : bin
-  path   : bin/get__hello__go
+  path   : bin/hello-go
 
 - method : get
   route  : /_/hello/ruby/listener
   type   : listener
   local  : true 
-  path   : listeners/get__hello__ruby__listener
+  path   : listeners/hello-ruby
 
 - method : get
   route  : /_/hello/go/listener
