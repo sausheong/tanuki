@@ -4,9 +4,9 @@
 
 # Tanuki
 
-Tanuki is a polyglot web framework that allows developers to write a web application or service in multiple programming languages. The basic concept is simple -- an acceptor (which is a HTTP server) accepts HTTP requests and redirects it to a handler (either an executable binary/script or a TCP socket server) to handle. These handlers can be written in different programming languages and run independently from each other.
+Tanuki is a polyglot web framework that allows developers to write a web application or service in multiple programming languages. The basic concept is simple -- an acceptor (which is a HTTP server) receives HTTP requests and redirects it to a handler (either an executable binary/script or a TCP socket server) to handle. These handlers can be written in different programming languages and run independently from each other.
 
-Tanuki is :warning: _experimental_ software at this point in time. Use at your own risk! :warning:
+This is :warning: _experimental_ software at this point in time. Use at your own risk! :warning:
 
 ## Installing Tanuki
 
@@ -367,11 +367,11 @@ Nonetheless because it works differently, first time developers on Tanuki would 
 
 ## FAQs
 
-### I'm still skeptical
+### I'm still skeptical, why spend the effort?
 
-Of course. Tanuki is not for every web application or service, and there seems to be additional effort to do something that could be relatively simple. The real benefits of Tanuki is really with longer term maintenance of the entire system. 
+Of course. Tanuki is not for every web application or service, and there is additional effort to do something that could be relatively simple to write. The real benefits of Tanuki comes with over the lifespan of the software. If you're planning to write something that needs to be maintained over a period of time by different developers or groups of developers, Tanuki can be a good choice (because of the reasons given above).
 
-### Isn't this the same as CGI (Common Gateway Interface?
+### Isn't this the same as CGI (Common Gateway Interface)?
 
 Yes and no. Tanuki is partially inspired by [CGI](https://en.wikipedia.org/wiki/Common_Gateway_Interface) but there are some significant differences. In CGI, data to the CGI scripts are passed using environment variables, while in Tanuki it is sent into the bin through the command line argument as a JSON request. The Tanuki JSON request is also much more closer to the actual HTTP request.
 
