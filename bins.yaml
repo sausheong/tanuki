@@ -1,0 +1,8 @@
+--- # bins
+- method : get
+  route  : /_/hello/ruby
+  file   : bin/get__hello__ruby
+
+- method : get
+  route  : /_/hello/go
+  file   : bin/get__hello__go

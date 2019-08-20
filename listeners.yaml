@@ -1,0 +1,10 @@
+--- # listeners
+- method   : get
+  route    : /_/hello/ruby/listener
+  local    : true 
+  path     : listeners/get__hello__ruby__listener
+
+- method   : get
+  route    : /_/hello/go/listener
+  local    : false
+  path     : localhost:55771
