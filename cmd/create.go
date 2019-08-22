@@ -27,21 +27,19 @@ func create(path string) {
 	fmt.Println("Creating Tanuki application at", path)
 	executable, _ := os.Executable()
 
-	if _, err := os.Stat(path); err == nil {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
 		os.Mkdir(path, os.FileMode(0000755))
 		os.Mkdir(join(path, "/handlers"), os.FileMode(0000755))
 		os.Mkdir(join(path, "/static"), os.FileMode(0000755))
 		copy(executable, join(path, "/tanuki"))
 		copy("handlers.yaml", join(path, "/handlers.yaml"))
 		copyFilesInDir("handlers", join(path, "/handlers"))
-	} else {
-		fmt.Println("Problem creating application -", err)
 	}
+	fmt.Println("Created.")
 }
 
 func copyFilesInDir(src, dst string) (err error) {
 	err = filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
-		fmt.Println("copying:", info.Name(), join(src, info.Name(), join(dst, "/", info.Name())))
 		copy(join(src, "/", info.Name()), join(dst, "/", info.Name()))
 		return nil
 	})
