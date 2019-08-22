@@ -2,28 +2,28 @@
 - method : get
   route  : /_/hello/ruby
   type   : bin
-  path   : bin/hello-ruby
+  path   : handlers/hello-ruby
 
 - method : get
   route  : /_/hello/go
   type   : bin
-  path   : bin/hello-go
+  path   : handlers/hello-go
 
 - method : get
   route  : /_/form/ruby
   type   : bin
-  path   : bin/form-ruby
+  path   : handlers/form-ruby
 
 - method : post
   route  : /_/form/ruby
   type   : bin
-  path   : bin/form-ruby
+  path   : handlers/form-ruby
 
 - method : get
   route  : /_/hello/ruby/listener
   type   : listener
   local  : true 
-  path   : listeners/hello-ruby
+  path   : handlers/hello-ruby-listener
 
 - method : get
   route  : /_/hello/go/listener
