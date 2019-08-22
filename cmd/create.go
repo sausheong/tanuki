@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -15,7 +16,7 @@ func init() {
 var createCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create a Tanuki application or service",
-	Long:  `Create a Tanuki applicaion or service and sets up the necessary structure and libraries`,
+	Long:  `Create a Tanuki applicaion or service and sets up the necessary structure and samples`,
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		create(args[0])
@@ -26,13 +27,25 @@ func create(path string) {
 	fmt.Println("Creating Tanuki application at", path)
 	executable, _ := os.Executable()
 
-	if _, err := os.Stat(path); os.IsNotExist(err) {
+	if _, err := os.Stat(path); err == nil {
 		os.Mkdir(path, os.FileMode(0000755))
-		os.Mkdir(join(path, "/bin"), os.FileMode(0000755))
-		os.Mkdir(join(path, "/listener"), os.FileMode(0000755))
+		os.Mkdir(join(path, "/handlers"), os.FileMode(0000755))
 		os.Mkdir(join(path, "/static"), os.FileMode(0000755))
 		copy(executable, join(path, "/tanuki"))
+		copy("handlers.yaml", join(path, "/handlers.yaml"))
+		copyFilesInDir("handlers", join(path, "/handlers"))
+	} else {
+		fmt.Println("Problem creating application -", err)
 	}
+}
+
+func copyFilesInDir(src, dst string) (err error) {
+	err = filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+		fmt.Println("copying:", info.Name(), join(src, info.Name(), join(dst, "/", info.Name())))
+		copy(join(src, "/", info.Name()), join(dst, "/", info.Name()))
+		return nil
+	})
+	return
 }
 
 func copy(src, dst string) (int64, error) {
