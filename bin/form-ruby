@@ -1,0 +1,49 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+request = JSON.parse ARGV[0]
+
+response = {
+    status: 200,
+    header: {},
+    body: ""
+}
+
+case request["Method"]
+when "GET"
+    response["body"] = DATA.read
+when "POST"
+    response["body"] = "Hello, #{request['Params']['uname'][0]}"
+else
+    response["status"] = 500
+    response["body"] = "No such request"
+end
+
+puts response.to_json
+
+
+__END__
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Simple login form</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  </head>
+  <body>
+    <form action="/_/form/ruby" method="post">
+        <div class="container">
+            <h1>Simple Login Form</h1>
+            <div class="form-group">
+                <label for="uname">Username</label>
+                <input type="text" class="form-control" placeholder="Enter Username" name="uname" required>
+            </div>
+            <div class="form-group">            
+                <label for="psw"><strong>Password</strong></label>
+                <input type="password" class="form-control" placeholder="Enter Password" name="psw">
+            </div>
+            <button type="submit" class="btn btn-primary">Login</button>
+        </div>
+    </form>
+  </body>
+</html>

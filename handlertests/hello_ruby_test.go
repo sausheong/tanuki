@@ -1,4 +1,4 @@
-package tests
+package handlertests
 
 import (
 	"os/exec"

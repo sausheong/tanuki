@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/sausheong/tanuki/structs"
+	"github.com/sausheong/tanuki/data"
 	"github.com/spf13/cobra"
 )
 
@@ -49,8 +49,6 @@ this command only in the Tanuki application root.`,
 }
 
 func start() {
-	// getAllBins()
-	// getAllListeners()
 	var err error
 	handlers, err = getHandlers(*handlerConfig)
 	if err != nil {
@@ -63,10 +61,14 @@ func start() {
 	startLocalListeners()
 	router := httprouter.New()
 
-	// currently supports GET and POST only
-	// TODO
+	// all routes to the accept func, developer should differentiate at the handler level
 	router.GET("/_/*p", accept)
 	router.POST("/_/*p", accept)
+	router.PUT("/_/*p", accept)
+	router.DELETE("/_/*p", accept)
+	router.PATCH("/_/*p", accept)
+	router.HEAD("/_/*p", accept)
+	router.OPTIONS("/_/*p", accept)
 
 	router.ServeFiles("/_s/*filepath", http.Dir(*static))
 
@@ -87,14 +89,14 @@ func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Para
 	fmt.Print("Tanuki accepting ", request.Method, " request ", request.URL, " - ")
 	start := time.Now()
 	// the multipart contains the multipart data
-	multipart := make(map[string][]structs.Multipart)
+	multipart := make(map[string][]data.Multipart)
 
 	// parse the multipart form for stuff in the forms if it's a POST
 	if request.Method == "POST" {
 		request.ParseMultipartForm(3 << 20)
 		if request.MultipartForm != nil {
 			for mk, mv := range request.MultipartForm.File {
-				var parts []structs.Multipart
+				var parts []data.Multipart
 				for _, v := range mv {
 					f, err := v.Open()
 					if err != nil {
@@ -106,7 +108,7 @@ func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Para
 						danger("Cannot copy multipart message into buffer", err)
 					}
 					content := base64.StdEncoding.EncodeToString(buf.Bytes())
-					part := structs.Multipart{
+					part := data.Multipart{
 						Filename:    v.Filename,
 						ContentType: v.Header["Content-Type"][0],
 						Content:     content,
@@ -132,9 +134,9 @@ func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Para
 	// create the struct for the JSON
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(request.Body)
-	reqInfo := structs.RequestInfo{
+	reqInfo := data.RequestInfo{
 		Method: request.Method,
-		URL: structs.URLInfo{
+		URL: data.URLInfo{
 			Scheme:   request.URL.Scheme,
 			Opaque:   request.URL.Opaque,
 			Host:     request.URL.Host,
@@ -231,7 +233,7 @@ func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Para
 	// receive response
 	// ----------------
 	// parse the JSON output
-	var response structs.ResponseInfo
+	var response data.ResponseInfo
 	err = json.Unmarshal([]byte(output), &response)
 	if err != nil {
 		reply(writer, 500, []byte("Cannot unmarshal response JSON - "+err.Error()))

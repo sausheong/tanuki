@@ -1,4 +1,4 @@
-package tests
+package handlertests
 
 var reqJSON string
 var expected string

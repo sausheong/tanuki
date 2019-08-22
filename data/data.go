@@ -1,4 +1,4 @@
-package structs
+package data
 
 // RequestInfo corresponds to a HTTP 1.1 request
 type RequestInfo struct {

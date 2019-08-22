@@ -10,6 +10,16 @@
   path   : bin/hello-go
 
 - method : get
+  route  : /_/form/ruby
+  type   : bin
+  path   : bin/form-ruby
+
+- method : post
+  route  : /_/form/ruby
+  type   : bin
+  path   : bin/form-ruby
+
+- method : get
   route  : /_/hello/ruby/listener
   type   : listener
   local  : true 
