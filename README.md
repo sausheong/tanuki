@@ -1,8 +1,10 @@
 <div id="logo" align="center">
     <img src="tanuki.png" alt="Tanuki" width="150"/>
+    <br/>
+    :warning: This is _experimental_ software. Use at your own risk! :warning:
 </div>
 
-:warning: This is _experimental_ software. Use at your own risk! :warning:
+
 
 # Tanuki
 
