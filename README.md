@@ -1,10 +1,6 @@
 <div id="logo" align="center">
-    <img src="tanuki.png" alt="Tanuki" width="150"/>
-    <br/>
-    :warning: This is _experimental_ software. Use at your own risk! :warning:
+    <img src="tanuki.png" alt="Tanuki" width="150"/>    
 </div>
-
-
 
 # Tanuki
 
@@ -416,6 +412,9 @@ In designing Tanuki, I've deliberately moved away from any message queues to red
 
 Nonetheless, there were good lessons learnt from my experience in Polyglot. However, I've stopped working on Polyglot already.
 
+### Who is using this in production?
+
+No-one yet. :warning: This is still _experimental_ software and not production ready. :warning: If you're trying it out, would appreciate feedback and even better yet, pull requests to contribute!
 
 ## Credits
 
