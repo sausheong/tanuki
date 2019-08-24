@@ -87,6 +87,7 @@ Handlers are configured in a `handlers.yaml` file by default. This is how a hand
   local  : false
   path   : localhost:55771
 ```
+The configuration is pretty straightforward. The `method` parameter determines the type of HTTP method to be routed, the `route` determines the URL route, the `type` is the type of handler, either a /bin/ or a /listener/ and the `path` is either a path to the file, or a URL of the remote listener, which includes the hostname and the port. Finally, the `local` parameter determines if it’s a local or a remote listener.
 
 ## Handler input and output
 
