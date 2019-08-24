@@ -26,7 +26,7 @@ Once you can have downloaded the source, you can build the command line tool `ta
 go build
 ```
 
-With tha command line tool, can you create a skeleton structure for your new web application or service:
+With the command line tool, can you create a skeleton structure for your new web application or service:
 
 ```
 ./tanuki create poko
@@ -70,7 +70,7 @@ Handlers are configured in a `handlers.yaml` file by default. This is how a hand
   type   : bin
   path   : bin/hello-ruby
 
-- method : get
+- method : post
   route  : /_/hello/go
   type   : bin
   path   : bin/hello-go
@@ -366,6 +366,11 @@ If you're familiar with other web frameworks, many of them work the same way. Ta
 
 Nonetheless because it works differently, first time developers on Tanuki would find a steeper learning curve. For example, if you're used to having a authentication and authorization drop-in library for other web frameworks, in Tanuki you might need to build that in yourself. To do this you might need to set and get the cookies to keep the state when you go from action to action.
 
+### Operations and monitoring complexities
+
+It's obvious that monitoring and operating a single process will be easier than monitoring and operating multiple processes, which potentially can be distributed across different parts of the network. Complexity increases for managing code and for deployment as well.
+
+
 ## FAQs
 
 ### I'm still skeptical, why spend the effort?
@@ -374,11 +379,19 @@ Of course. Tanuki is not for every web application or service, and there is addi
 
 ### Isn't this the same as CGI (Common Gateway Interface)?
 
-Yes and no. Tanuki is partially inspired by [CGI](https://en.wikipedia.org/wiki/Common_Gateway_Interface) but there are some significant differences. In CGI, data to the CGI scripts are passed using environment variables, while in Tanuki it is sent into the bin through the command line argument as a JSON request. The Tanuki JSON request is also much more closer to the actual HTTP request.
+Yes and no. 
+
+Tanuki is partially inspired by [CGI](https://en.wikipedia.org/wiki/Common_Gateway_Interface) but there are some significant differences. In CGI, data to the CGI scripts are passed using environment variables, while in Tanuki it is sent into the bin through the command line argument as a JSON request. The Tanuki JSON request is also much more closer to the actual HTTP request.
 
 Tanuki uses TCP socket servers as listeners to reduce the overhead of creating one process per requeset. This method is very similar to that of [FastCGI](https://en.wikipedia.org/wiki/FastCGI) but has a much simpler implementation. Also for FastCGI, a web application or service is built using a single programming language only. While FastCGI APIs exist for multiple languages, the intent was never to write one web application or service using more than one.
 
-So for the implementations the mechanisms are close but not the same (Tanuki is simpler), neither CGI or FastCGI is meant for multiple programming languages like Tanuki is for.
+Tanuki is also inspired by [WSGI](https://www.python.org/dev/peps/pep-0333/), a calling convention used to forward HTTP requests to web applications or frameworks written in Python. However as with CGI and FastCGI, WSGI is meant for a single programming language only (in this case Python, though other programming languages have similar calling conventions). 
+
+So for the implementations the mechanisms are close but not the same, neither CGI or FastCGI is meant for multiple programming languages like Tanuki is for.
+
+### This sounds suspiciously like micro-services
+
+Absolutely. Many of the benefits and issues with micro-services are the same with Tanuki because fundamentally the mechanisms are very similiar. However, Tanuki is meant to be used to build a single web application or service whereas micro-services are standalone and independent and performs a specialised service. Tanuki can use micro-services though -- the actions themselves can call micro-services to do the work. 
 
 ### You were working on Polyglot earlier, what happened to it?
 
