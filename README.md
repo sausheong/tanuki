@@ -88,9 +88,9 @@ Handlers are configured in a `handlers.yaml` file by default. This is how a hand
   path   : localhost:55771
 ```
 
-## Tanuki actions
+## Handler input and output
 
-### Tanuki HTTP requests
+### HTTP requests
 
 The only input into the handlers (either bins or listeners) is the HTTP request JSON. The below is the Go structs for the JSON (I'm showing you the Go struct because Tanuki is written in Go).
 
@@ -185,7 +185,7 @@ This is an example of the JSON for the HTTP request, a GET request to Tanuki at 
 
 You might notice here that if you want to get the `name` you can either parse the `RawQuery` or get `RequestURI` or you can simply get it from `Params`. 
 
-### Tanuki HTTP response
+### HTTP response
 
 The only response that Tanuki accepts from the handlers is a HTTP response JSON. Here's the Go struct for the JSON.
 
