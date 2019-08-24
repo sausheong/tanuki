@@ -26,7 +26,7 @@ There are two types of handlers.
 
 ### Executable binaries or scripts
 
-Executable binaries or scripts (or /bins/) are files that are, well, executable. You can normally run them on the command line. As a Tanuki bin handler, it must be able to take process a JSON string (as a command line argument) and return another JSON string to STDOUT. The input JSON contains HTTP request data and the output JSON has HTTP response data.
+Executable binaries or scripts (or _bins_) are files that are, well, executable. You can normally run them on the command line. As a Tanuki bin handler, it must be able to take process a JSON string (as the first command line argument) and return another JSON string to STDOUT. The input JSON contains HTTP request data and the output JSON has HTTP response data.
 
 ### TCP socket server
 
@@ -380,7 +380,6 @@ Nonetheless because it works differently, first time developers on Tanuki would 
 It's obvious that monitoring and operating a single process will be easier than monitoring and operating multiple processes, which potentially can be distributed across different parts of the network. Complexity increases for managing code and for deployment as well.
 
 On the other hand, in a sizable web app, you're already likely to be deploying micro-services and already have a structure for managing these services. Extending them to Tanuki remote handlers should add relatively little overhead. In any case this is primarily required for remote listeners only and you have an option to start off the web app using only bins, then local listeners and only start using remote listeners to scale up.
-
 
 ## FAQs
 
