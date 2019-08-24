@@ -241,7 +241,7 @@ hello sausheong
 
 ### Bins
 
-Bins are the simplest handler to write and can be written in any programming language than can parse JSON and take in a command line argument and print a JSON string to STDOUT. This is an example of a simple bin handler written in Ruby.
+Bins are the simplest handler to write and can be written in any programming language than can parse JSON (actually since JSON is simply a string, it, just being able to manipulate strings is good enough) and take in a command line argument and print a JSON string to STDOUT. This is an example of a simple bin handler written in Ruby.
 
 ```ruby
 #!/usr/bin/env ruby
@@ -277,7 +277,7 @@ For this I use the [`jq` tool](https://stedolan.github.io/jq/), a lightweight co
 
 ### Listeners
 
-Listeners are a bit more complicated to write but they work the same way as bins. As long as your programming language of choice is able to parse JSON, and
+Listeners are a bit more complicated to write but they work the same way as bins. As long as your programming language of choice is able to parse JSON, and can be used to create a TCP socket server, you're good to go.
 
 When a HTTP request is sent to Tanuki (from a browser or another application), Tanuki creates a TCP connection to the listener and sends in the JSON HTTP request. Important to remember that the JSON request will end with a newline `\n` so when writing the listener you should use this to detect the end of the JSON string.
 
