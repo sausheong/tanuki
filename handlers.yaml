@@ -10,6 +10,11 @@
   path   : handlers/hello-go
 
 - method : get
+  route  : /_/hello/php
+  type   : bin
+  path   : handlers/hello-php
+
+- method : get
   route  : /_/form/ruby
   type   : bin
   path   : handlers/form-ruby

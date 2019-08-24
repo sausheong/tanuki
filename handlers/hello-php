@@ -1,0 +1,12 @@
+#!/usr/bin/env php
+
+<?php
+$request = json_decode($argv[1], true);
+$name = $request['Params']['name'][0];
+?>
+
+{
+    "status": 200,
+    "headers": {},
+    "body":"hello <?php echo $name; ?>" 
+}
