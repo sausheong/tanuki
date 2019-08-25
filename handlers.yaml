@@ -31,6 +31,12 @@
   local  : true 
   path   : handlers/hello-ruby-listener
 
+- method : get
+  route  : /_/hello/python/listener
+  type   : listener
+  local  : true 
+  path   : handlers/hello-python-listener
+
   # Remote listeners need to be started independently from Tanuki
 - method : get
   route  : /_/hello/go/listener

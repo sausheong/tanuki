@@ -160,9 +160,7 @@ func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Para
 	if err != nil {
 		danger("Failed to marshal the request into JSON - ", err)
 	}
-	// routeID is used to identify which responder to call
-	// routeID := join(strings.ToLower(request.Method), strings.ReplaceAll(request.URL.Path[2:], "/", "__"))
-
+	info("Request - ", string(reqJSON))
 	// ------------
 	// send request
 	// ------------
@@ -194,7 +192,7 @@ func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Para
 				conn, err = net.Dial("tcp", ":"+handler.Port)
 				if err != nil {
 					reply(writer, 404, []byte("Cannot connect to listener"))
-					danger("Cannot connect to listener", err)
+					danger("Cannot connect to local listener", err)
 					fmt.Println(time.Since(start).String())
 					return
 				}
@@ -202,7 +200,7 @@ func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Para
 				conn, err = net.Dial("tcp", handler.Path)
 				if err != nil {
 					reply(writer, 404, []byte("Cannot connect to listener"))
-					danger("Cannot connect to listener", err)
+					danger("Cannot connect to remote listener", err)
 					fmt.Println(time.Since(start).String())
 					return
 				}
@@ -234,10 +232,12 @@ func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Para
 	// ----------------
 	// parse the JSON output
 	var response data.ResponseInfo
+	info("Response:", string(output))
 	err = json.Unmarshal([]byte(output), &response)
 	if err != nil {
 		reply(writer, 500, []byte("Cannot unmarshal response JSON - "+err.Error()))
 		danger("Cannot unmarshal response JSON", err, request.Method, request.URL.Path, " - ", time.Since(start).String())
+		danger(string(output))
 		fmt.Println(time.Since(start).String())
 		return
 	}
@@ -283,20 +283,22 @@ func isTextMimeType(ctype string) bool {
 
 func startLocalListeners() {
 	for i, handler := range handlers {
-		if handler.Type == "listener" && handler.Local {
-			// get a free port for the listener
-			port, err := getFreePort()
-			if err != nil {
-				fmt.Println("Cannot get port", err)
-			}
-			// start the listener and pass it the port number
-			go exec.Command(handler.Path, strconv.Itoa(port)).Run()
-			handlers[i].Port = strconv.Itoa(port)
-			fmt.Println("handler started:", handler.Path, port)
-		} else {
-			_, err := net.Dial("tcp", handler.Path)
-			if err != nil {
-				danger("Cannot connect to", handler.Path, err)
+		if handler.Type == "listener" {
+			if handler.Local {
+				// get a free port for the listener
+				port, err := getFreePort()
+				if err != nil {
+					fmt.Println("Cannot get port", err)
+				}
+				// start the listener and pass it the port number
+				go exec.Command(handler.Path, strconv.Itoa(port)).Run()
+				handlers[i].Port = strconv.Itoa(port)
+				fmt.Println("handler started:", handler.Path, port)
+			} else {
+				_, err := net.Dial("tcp", handler.Path)
+				if err != nil {
+					danger("Cannot connect to", handler.Path, err)
+				}
 			}
 		}
 	}
