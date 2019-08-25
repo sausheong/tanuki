@@ -313,6 +313,10 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             conn.sendall(str.encode(json.dumps(response)+"\n", 'utf-8' ))
 ```
 
+## Sample web app
+
+I've created a sample web app to show how a simple Tanuki web app can be created. Please check out https://github.com/sausheong/pompoko.
+
 ## Why Tanuki?
 
 It seems a bit of work to write a single web app in different programming languages, so why do it? It's really all about future-proofing.
