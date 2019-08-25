@@ -4,6 +4,8 @@
 
 # Tanuki
 
+:heavy_exclamation_mark: I've created a sample web app to show how a simple Tanuki web app can be created. Please check out https://github.com/sausheong/pompoko. :heavy_exclamation_mark:
+
 Writing web apps are relatively straightforward nowadays especially when there are so many web frameworks to choose from. Just whip out a framework in your favourite programming language and start writing that MVP!
 
 What a lot of people (engineers included) trip over though, is that software is not static and over its lifespan, will grow and evolve. The libraries used in writing them are software too and they will also change and evolve. The programming languages used to write them will change and evolve too. And most importantly, the people writing the software grow and change, and quite often different people end up taking over and continuing the same software.
