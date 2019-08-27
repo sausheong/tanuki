@@ -315,6 +315,120 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             conn.sendall(str.encode(json.dumps(response)+"\n", 'utf-8' ))
 ```
 
+## Developing and testing for handlers
+
+Developing and testing handlers is pretty much like developing and testing standalone command line programs or TCP socket servers. To test the handlers there are different techniques.
+
+For bins, you can call the handler directly, passing in the JSON request as the only argument and it should produce a JSON response to STDOUT. For listeners, you can cal the handler directly again and passing in the port number. To test the listener, you can telnet to the listener at the port number and pass in the JSON request as input. It should return a JSON response.
+
+I've created a couple of tools to help in developing and testing handlers.
+
+### Capture tool
+
+The capture tool helps to capture a normal HTTP request into a JSON request to be used as test input into the handlers. This tool is basically a HTTP server that you send a HTTP request to and it will save the request to a json file. 
+
+To start the capture server, do this at the command line:
+
+```
+./tanuki capture
+```
+
+This will start a HTTP server at 8088. You can change the port with the different capture options.
+
+Now you can use a browser, enter the URL `http://localhost:8088//hello/ruby?name=sausheong` to send a HTTP GET request to the capture server. The capture server will then create a `request.json` file from this request that looks like this:
+
+```json
+{
+    "Method": "GET",
+    "URL": {
+        "Scheme": "",
+        "Opaque": "",
+        "Host": "",
+        "Path": "/hello/ruby",
+        "RawQuery": "name=sausheong",
+        "Fragment": ""
+    },
+    "Proto": "HTTP/1.1",
+    "Header": {
+        "Accept": [
+            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        ],
+        "Accept-Encoding": [
+            "gzip, deflate"
+        ],
+        "Accept-Language": [
+            "en-sg"
+        ],
+        "Connection": [
+            "keep-alive"
+        ],
+        "Upgrade-Insecure-Requests": [
+            "1"
+        ],
+        "User-Agent": [
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.1.2 Safari/605.1.15"
+        ]
+    },
+    "Body": "",
+    "ContentLength": 0,
+    "TransferEncoding": null,
+    "Host": "localhost:8088",
+    "Params": {
+        "name": [
+            "sausheong"
+        ]
+    },
+    "Multipart": {},
+    "RemoteAddr": "[::1]:56629",
+    "RequestURI": "/hello/ruby?name=sausheong"
+}
+```
+
+To use the contents of this `request.json` file as the argument to your bin handler, do this:
+
+```
+handlers/hello-ruby "$(cat request.json)"
+```
+
+To use it with a listener, you can use telnet, copy and paste the JSON to send to listener.
+
+Alternatively you can also use the Tanuki send tool.
+
+### Send tool
+
+The Tanuki send tool can be used to send input from a request JSON file to either a bin or listener. 
+
+To use it with a bin:
+
+```
+./tanuki send --file handlers/hello-ruby
+```
+
+![send-bin](images/tanuki-send-success.png)
+
+The tool also helps you to parse the JSON response and make sure it's valid. If it's not, it will show and error:
+
+![send-bin-error](images/tanuki-send-error.png)
+
+For listeners, you need to start the listener first:
+
+```
+handlers/hello-ruby-listener 55771
+```
+
+This starts the listener normally as a TCP socket server that listens at port 55771.
+
+To use the send tool with this listener:
+
+```
+./tanuki send --listen 55771
+```
+
+![send-listener](images/tanuki-send-listener.png)
+
+This will send the JSON request to the listener at port 55771. You'd notice that the output is the same. If you have any errors you'll see the same error message as with the bin handler.
+
+
 ## Sample web app
 
 I've created a sample web app to show how a simple Tanuki web app can be created. Please check out https://github.com/sausheong/pompoko.

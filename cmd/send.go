@@ -38,7 +38,6 @@ var sendCmd = &cobra.Command{
 }
 
 func send() {
-	fmt.Println("Sending request to:", *filePath)
 	reqJSON, err := ioutil.ReadFile(*reqFile)
 	if err != nil {
 		fmt.Println("Cannot read request JSON file - ", err)
@@ -49,6 +48,7 @@ func send() {
 
 	var output []byte
 	if *filePath != "" {
+		fmt.Println("Sending request to:", *filePath)
 		output, err = exec.Command(*filePath, string(reqJSON)).Output()
 		if err != nil {
 			color.Red.Println("Cannot execute bin", err)
