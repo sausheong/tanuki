@@ -4,8 +4,6 @@
 
 # Tanuki
 
-:heavy_exclamation_mark: I've created a sample web app to show how a simple Tanuki web app can be created. Please check out https://github.com/sausheong/pompoko. :heavy_exclamation_mark:
-
 Writing web apps are relatively straightforward nowadays especially when there are so many web frameworks to choose from. Just whip out a framework in your favourite programming language and start writing that MVP!
 
 What a lot of people (engineers included) trip over though, is that software is not static and over its lifespan, will grow and evolve. The libraries used in writing them are software too and they will also change and evolve. The programming languages used to write them will change and evolve too. And most importantly, the people writing the software grow and change, and quite often different people end up taking over and continuing the same software.
@@ -13,6 +11,11 @@ What a lot of people (engineers included) trip over though, is that software is 
 As you would expect, it takes an experienced and forward thinking engineer (or ‘architect’) to think about these changes, but as you would expect, even the most experienced engineers cannot predict the future. Horror stories of multi-month or even years to [just migrate from one version of a framework to another](https://github.blog/2018-09-28-upgrading-github-from-rails-3-2-to-5-2/) are quite common place. Some even regard [dependency hell](https://blog.tidelift.com/dependency-hell-is-inevitable) as inevitable.
 
 There is no silver bullet solution — software is complex and difficult. I’ve been developing software (mostly web apps) for a good 25 years and this problem have been hitting me over the head over and over again. I’ve been toying with different possible answers for a long time and this is my latest attempt.
+
+## Sample web app
+
+I've created a sample web app to show how a simple Tanuki web app can be created. Please check out https://github.com/sausheong/pompoko.
+
 
 ## How does it work
 
@@ -427,11 +430,6 @@ To use the send tool with this listener:
 ![send-listener](images/tanuki-send-listener.png)
 
 This will send the JSON request to the listener at port 55771. You'd notice that the output is the same. If you have any errors you'll see the same error message as with the bin handler.
-
-
-## Sample web app
-
-I've created a sample web app to show how a simple Tanuki web app can be created. Please check out https://github.com/sausheong/pompoko.
 
 ## Why Tanuki?
 
