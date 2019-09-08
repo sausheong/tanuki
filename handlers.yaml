@@ -15,6 +15,11 @@
   path   : handlers/hello-php
 
 - method : get
+  route  : /_/hello/rust
+  type   : bin
+  path   : handlers/hello-rust/target/release/hello-rust
+
+- method : get
   route  : /_/form/ruby
   type   : bin
   path   : handlers/form-ruby
@@ -32,6 +37,12 @@
   path   : handlers/hello-ruby-listener
 
 - method : get
+  route  : /_/hello/go/listener
+  type   : listener
+  local  : true 
+  path   : handlers/hello-go-listener
+
+- method : get
   route  : /_/hello/python/listener
   type   : listener
   local  : true 
@@ -39,7 +50,7 @@
 
   # Remote listeners need to be started independently from Tanuki
 - method : get
-  route  : /_/hello/go/listener
+  route  : /_/hello/rust/listener
   type   : listener
   local  : false
-  path   : localhost:55771
+  path   : :9123

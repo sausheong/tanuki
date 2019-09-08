@@ -27,6 +27,7 @@ var static *string
 var readTimeout *int64
 var writeTimeout *int64
 var handlerConfig *string
+var showHandlers *bool
 
 func init() {
 	rootCmd.AddCommand(acceptorCmd)
@@ -36,6 +37,7 @@ func init() {
 	readTimeout = acceptorCmd.Flags().Int64("readtimeout", 10, "server read time-out")
 	writeTimeout = acceptorCmd.Flags().Int64("writetimeout", 600, "server write time-out")
 	handlerConfig = acceptorCmd.Flags().String("handlerConfig", "handlers.yaml", "handler configuration file")
+	showHandlers = acceptorCmd.Flags().BoolP("showHandlers", "s", false, "show list of handlers loaded")
 }
 
 var acceptorCmd = &cobra.Command{
@@ -56,8 +58,9 @@ func start() {
 		fmt.Println("Cannot load handlers configuration, please check the handlers.yaml file", err)
 		return
 	}
-	fmt.Println("handlers:", handlers)
-
+	if *showHandlers {
+		printHandlers()
+	}
 	startLocalListeners()
 	router := httprouter.New()
 
@@ -70,6 +73,9 @@ func start() {
 	router.HEAD("/_/*p", accept)
 	router.OPTIONS("/_/*p", accept)
 
+	// for admin and monitoring purposes
+	router.GET("/_m/", monitor)
+
 	router.ServeFiles("/_s/*filepath", http.Dir(*static))
 
 	host := join((*ip).String(), ":", strconv.Itoa(*port))
@@ -80,14 +86,23 @@ func start() {
 		WriteTimeout:   time.Duration(*writeTimeout * int64(time.Second)),
 		MaxHeaderBytes: 1 << 20,
 	}
-	fmt.Println("Tanuki started at", host, time.Now().String())
+	fmt.Println("Tanuki started at", host, time.Now().Format("2006-01-02T15:04:05"))
 	server.ListenAndServe()
+}
+
+func monitor(writer http.ResponseWriter, request *http.Request, _ httprouter.Params) {
+	var output string
+	for _, h := range handlers {
+		output = output + fmt.Sprintf("<div>%s %s %s %s %s</div>\n", h.Method, h.Route, h.Type, h.Path, h.Port)
+	}
+	reply(writer, 200, []byte(output))
 }
 
 // performs the main processing for the acceptor
 func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Params) {
-	fmt.Print("Tanuki accepting ", request.Method, " request ", request.URL, " - ")
 	start := time.Now()
+	fmt.Print(start.Format("2006-01-02T15:04:05 "), request.Method, " ", request.URL, " - ")
+
 	// the multipart contains the multipart data
 	multipart := make(map[string][]data.Multipart)
 
@@ -160,7 +175,7 @@ func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Para
 	if err != nil {
 		danger("Failed to marshal the request into JSON - ", err)
 	}
-	info("Request - ", string(reqJSON))
+	// info("Request - ", string(reqJSON))
 	// ------------
 	// send request
 	// ------------
@@ -179,7 +194,7 @@ func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Para
 			if err != nil {
 				danger("Cannot execute bin", err)
 			}
-			info("Binary called", request.Method, join("(", handler.Path, ") - ", time.Since(start).String()))
+			// info("Binary called", request.Method, join("(", handler.Path, ") - ", time.Since(start).String()))
 
 		case "listener":
 			// listeners are TCP socket servers. Tanuki walks through files in the listener/ directory, and starts
@@ -211,7 +226,7 @@ func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Para
 			if err != nil {
 				fmt.Println("Cannot read from listener", err)
 			}
-			info("Listener called", request.Method, join(handler.Path, time.Since(start).String()))
+			// info("Listener called", request.Method, join(handler.Path, time.Since(start).String()))
 
 		default:
 			reply(writer, 404, []byte("Handler type not found"))
@@ -232,7 +247,6 @@ func accept(writer http.ResponseWriter, request *http.Request, _ httprouter.Para
 	// ----------------
 	// parse the JSON output
 	var response data.ResponseInfo
-	info("Response:", string(output))
 	err = json.Unmarshal([]byte(output), &response)
 	if err != nil {
 		reply(writer, 500, []byte("Cannot unmarshal response JSON - "+err.Error()))
@@ -282,6 +296,9 @@ func isTextMimeType(ctype string) bool {
 }
 
 func startLocalListeners() {
+	if *showHandlers {
+		fmt.Println("LOCAL LISTENERS")
+	}
 	for i, handler := range handlers {
 		if handler.Type == "listener" {
 			if handler.Local {
@@ -293,7 +310,9 @@ func startLocalListeners() {
 				// start the listener and pass it the port number
 				go exec.Command(handler.Path, strconv.Itoa(port)).Run()
 				handlers[i].Port = strconv.Itoa(port)
-				fmt.Println("handler started:", handler.Path, port)
+				if *showHandlers {
+					fmt.Printf("%-6v %s\n", port, handler.Path)
+				}
 			} else {
 				_, err := net.Dial("tcp", handler.Path)
 				if err != nil {
@@ -302,4 +321,23 @@ func startLocalListeners() {
 			}
 		}
 	}
+	if *showHandlers {
+		fmt.Println()
+	}
+}
+
+func printHandlers() {
+	fmt.Println("HANDLERS LIST")
+	for _, handler := range handlers {
+		local := ""
+		if handler.Type == "listener" {
+			if handler.Local {
+				local = "local"
+			} else {
+				local = "remote"
+			}
+		}
+		fmt.Printf("%-9v \uff5c %-8v \uff5c %-7v \uff5c %-30v \uff5c %-20v %s\n", handler.Type, strings.ToUpper(handler.Method), local, handler.Route, handler.Path, handler.Port)
+	}
+	fmt.Println()
 }

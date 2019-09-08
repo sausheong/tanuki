@@ -8,5 +8,4 @@ response = {
     header: {},
     body: "hello #{request['Params']['name'][0]}"
 }
-puts "some random error"
 puts response.to_json

@@ -1,8 +1,8 @@
 .DS_Store
 *.log
-bin/get__hello__go
-listeners/get__hello__go__listener
 tanuki
+handlers/hello-go 
+handlers/hello-go-listener
 Backups
 CachedExtensions
 globalStorage
