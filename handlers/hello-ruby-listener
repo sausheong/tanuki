@@ -10,7 +10,7 @@ loop {
         response = {
             status: 200,
             header: {},
-            body: "hello #{request['Params']['name'][0]}"
+            body: "hello #{request['Params']['name'][0]} from Ruby listener"
         }
         conn.puts response.to_json        
         conn.close

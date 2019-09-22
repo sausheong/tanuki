@@ -7,7 +7,7 @@ import (
 	"net"
 	"os"
 
-	"github.com/sausheong/tanuki/structs"
+	structs "github.com/sausheong/tanuki/data"
 )
 
 func main() {

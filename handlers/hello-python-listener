@@ -18,6 +18,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             response = {
                 'status': 200,
                 'header': {},
-                'body': "hello " + request['Params']['name'][0]
+                'body': "hello " + request['Params']['name'][0] + " Python listener"
             }
             conn.sendall(str.encode(json.dumps(response)+"\n", 'utf-8' ))

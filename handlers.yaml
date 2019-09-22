@@ -5,6 +5,11 @@
   path   : handlers/hello-ruby
 
 - method : get
+  route  : /_/hello/bash
+  type   : bin
+  path   : handlers/hello-bash
+
+- method : get
   route  : /_/hello/go
   type   : bin
   path   : handlers/hello-go

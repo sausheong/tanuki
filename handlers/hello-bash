@@ -5,6 +5,6 @@ cat <<- _EOF_
 {
     "status": 200, 
     "header": {}, 
-    "body": "hello $name"
+    "body": "hello $name from bash"
 }
 _EOF_

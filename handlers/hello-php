@@ -8,5 +8,5 @@ $name = $request['Params']['name'][0];
 {
     "status": 200,
     "headers": {},
-    "body":"hello <?php echo $name; ?>" 
+    "body":"hello <?php echo $name; ?> from PHP" 
 }

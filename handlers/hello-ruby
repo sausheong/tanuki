@@ -6,6 +6,6 @@ request = JSON.parse ARGV[0]
 response = {
     status: 200,
     header: {},
-    body: "hello #{request['Params']['name'][0]}"
+    body: "hello #{request['Params']['name'][0]} from Ruby"
 }
 puts response.to_json

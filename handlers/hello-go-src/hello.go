@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/sausheong/tanuki/structs"
+	structs "github.com/sausheong/tanuki/data"
 )
 
 /*
@@ -38,7 +38,7 @@ func main() {
 	headers["Set-Cookie"] = []string{"hello=world; expires=Mon, 12-Dec-2020 20:20:00 GMT"}
 	h, _ := json.Marshal(headers)
 
-	resp = fmt.Sprintf(response, 200, h, "hello "+request.Params["name"][0])
+	resp = fmt.Sprintf(response, 200, h, "hello "+request.Params["name"][0]+" from Go")
 	// response back to Tanuki is through STDOUT so simply write the JSON
 	// back to STDOUT and you're done
 	fmt.Print(resp)
